@@ -1,22 +1,23 @@
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
+import static org.junit.jupiter.api.Assertions.*;
+
 
 import java.time.LocalTime;
-
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.ArrayList;
+import java.util.List;
 
 class RestaurantTest {
     Restaurant restaurant;
     //REFACTOR ALL THE REPEATED LINES OF CODE
-    @BeforeEach
-    public void setup() {
 
+    @BeforeEach
+    public void setup(){
         LocalTime openingTime = LocalTime.parse("10:30:00");
         LocalTime closingTime = LocalTime.parse("22:00:00");
-        restaurant = service.addRestaurant("Amelie's cafe","Chennai",openingTime,closingTime);
-        restaurant.addToMenu("Sweet corn soup",119);
-        restaurant.addToMenu("Vegetable lasagne", 269);
-
+        restaurant =new Restaurant("Amelie's cafe","Chennai",openingTime,closingTime);
     }
 
     //>>>>>>>>>>>>>>>>>>>>>>>>>OPEN/CLOSED<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -24,19 +25,20 @@ class RestaurantTest {
     @Test
     public void is_restaurant_open_should_return_true_if_time_is_between_opening_and_closing_time(){
         //WRITE UNIT TEST CASE HERE
-	String restaurantToBeSearched = "Amelie's cafe";
-        Restaurant returnedRestaurant= service.findRestaurantByName(restaurantToBeSearched);
-        assertEquals(restaurantToBeSearched,returnedRestaurant.getName());
+        Restaurant spyRestaurant = Mockito.spy(restaurant);
+        LocalTime time = LocalTime.parse("18:00:00");
+        Mockito.when(spyRestaurant.getCurrentTime()).thenReturn(time);
+        assertTrue(spyRestaurant.isRestaurantOpen());
 
     }
 
     @Test
     public void is_restaurant_open_should_return_false_if_time_is_outside_opening_and_closing_time(){
         //WRITE UNIT TEST CASE HERE
-	String restaurantToBeSearched = "Coco's cafe";
-        assertThrows(restaurantNotFoundException.class,()-> {
-            service.findRestaurantByName(restaurantToBeSearched);
-        });
+        Restaurant spyRestaurant = Mockito.spy(restaurant);
+        LocalTime time = LocalTime.parse("03:00:00");
+        Mockito.when(spyRestaurant.getCurrentTime()).thenReturn(time);
+        assertFalse(spyRestaurant.isRestaurantOpen());
 
     }
 
@@ -80,4 +82,24 @@ class RestaurantTest {
                 ()->restaurant.removeFromMenu("French fries"));
     }
     //<<<<<<<<<<<<<<<<<<<<<<<MENU>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+    @Test
+    public void totalPrice_for_added_menu_items(){
+
+        restaurant.addToMenu("Totamto Soupe", 25);
+        restaurant.addToMenu("Apple Juice", 30);
+        restaurant.addToMenu("Orange Juice", 40);
+        restaurant.addToMenu("Biryani", 150);
+
+        List<String> itemsSelected = new ArrayList<String>();
+        itemsSelected.add("Totamto Soupe");
+        itemsSelected.add("Biryani");
+
+        int actualAmount = restaurant.getMenuTotalAmount(itemsSelected);
+        int expectedAmount = 175;
+        System.out.println(expectedAmount);
+        System.out.println(actualAmount);
+        assertEquals(expectedAmount, actualAmount);
+
+    }
 }
